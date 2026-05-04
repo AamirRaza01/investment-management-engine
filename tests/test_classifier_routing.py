@@ -10,6 +10,7 @@ fixtures/README.md — follow them or document any deviations in your README.
 from typing import Any
 
 import pytest
+from src.classifier.classifier import classify
 
 
 # ---------------------------------------------------------------------------
@@ -81,7 +82,7 @@ def matches_entities(actual: dict[str, Any], expected: dict[str, Any]) -> bool:
 # Routing accuracy — this is the test we score
 # ---------------------------------------------------------------------------
 
-@pytest.mark.skip(reason="Stub — wire up your classifier import below and remove this decorator")
+# @pytest.mark.skip(reason="Stub — wire up your classifier import below and remove this decorator")
 def test_classifier_routing_accuracy(gold_classifier_queries, mock_llm):
     """
     Threshold: ≥ 85% routing accuracy.
@@ -98,7 +99,7 @@ def test_classifier_routing_accuracy(gold_classifier_queries, mock_llm):
     assert accuracy >= 0.85, f"Routing accuracy {accuracy:.2%} below 85%"
 
 
-@pytest.mark.skip(reason="Stub — wire up your classifier import below and remove this decorator")
+# @pytest.mark.skip(reason="Stub — wire up your classifier import below and remove this decorator")
 def test_classifier_entity_extraction(gold_classifier_queries, mock_llm):
     """
     Soft signal — not a hard threshold. Reported, not failed on.
