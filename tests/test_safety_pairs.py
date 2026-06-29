@@ -12,6 +12,7 @@ need mock_llm.
 import pytest
 from src.safety.guard import check
 
+
 # @pytest.mark.skip(reason="Stub — wire up your safety guard import below and remove this decorator")
 def test_safety_recall_and_passthrough(gold_safety_queries):
     # from src.safety import check  # noqa: ERA001
