@@ -1,81 +1,83 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/SHM9MYZJ)
-# Valura AI — Team Lead Project Assignment
+# Investment Management Engine Core Spine
 
-You have been given access to this repository as part of the Valura AI team lead hiring process.
+An asynchronous wealth management microservice built with **FastAPI** and **Python 3.11+**. The system processes user investment queries through a deterministic safety validation pipeline, classifies intent, and streams real-time portfolio metrics using Server-Sent Events (SSE).
 
-**Read [`ASSIGNMENT.md`](ASSIGNMENT.md) in full before writing a single line of code.**
-
----
-
-## What you're building
-
-An AI agent ecosystem that helps a novice investor **build, monitor, grow, and protect** their portfolio. See [`ASSIGNMENT.md`](ASSIGNMENT.md) for the full mission, scope, and constraints.
+This project was built out completely in a test-driven development environment to establish a robust execution skeleton before rolling out live model connections.
 
 ---
 
-## Setup
+## 🛠️ System Architecture & Workflow
 
-**Requirements:** Python 3.11+, an OpenAI API key.
+Every client request follows a strict, sequential pipeline to minimize cost, guarantee low-latency safety boundaries, and prevent user-side loading delays:
 
-**Persistence is your choice.** Postgres, SQLite, or in-memory — pick one and defend it in your README. `DATABASE_URL` in `.env.example` is optional.
+```text
+                                [User Request] 
+                                      │
+                                      ▼
+1. Safety Guard (Local / Sync)  ──[Blocked]──> [SSE: safety_block] ──> [Close Channel]
+                                      │
+                                   [Passed]
+                                      ▼
+2. Intent Classifier (Dev Heuristics) ───────> [SSE: classification]
+                                      │
+                                      ▼
+3. Agent Router 
+      ├── Mapped to 'portfolio_health' ──────> [SSE: agent_response] ──> [Done]
+      └── Mapped to other intent tags ───────> [SSE: agent_stub] ─────> [Done]
 
-**Streaming is required.** SSE only. Use `sse-starlette`, FastAPI's `StreamingResponse`, or roll your own — your call.
+```
+---
+
+## Installation & Setup
+
+### 1. Clone the Repository
 
 ```bash
-git clone <your-classroom-repo-url>
-cd <repo-name>
-
-python -m venv venv
-source venv/bin/activate        # Linux/macOS
-venv\Scripts\activate           # Windows
-
-pip install -r requirements.txt
-
-cp .env.example .env
-# Fill in OPENAI_API_KEY
+git clone https://github.com/AamirRaza01/investment-management-engine.git
+cd working dir
 ```
 
-Use `gpt-4o-mini` while developing to keep costs down. Evaluation runs against `gpt-4.1`.
+### 2. Create a Virtual Environment
 
----
+```bash
+python -m venv venv
+```
 
-## Running Tests
+Activate the environment:
+
+**Windows**
+
+```bash
+venv\Scripts\activate
+```
+
+**Linux / macOS**
+
+```bash
+source venv/bin/activate
+```
+
+**Run Tests**
 
 ```bash
 pytest tests/ -v
 ```
 
-Tests must pass without an `OPENAI_API_KEY` set — mock the LLM. We will run `pytest tests/ -v` on your repo.
+**Start Development Server**
 
----
-
-## Repository Structure
-
-When you submit, your repository must contain:
-
-```
-README.md   ← overwrite this with your own (setup, decisions, library choices, video link)
-src/        ← all code
-tests/      ← all tests, must pass with pytest
+```bash
+uvicorn src.main:app --reload --port 8000
 ```
 
-`fixtures/`, `pytest.ini`, `requirements.txt`, `.env.example`, and `.github/` are part of the scaffold — leave them in place. Do not delete `ASSIGNMENT.md`.
+**Test Streaming Pipeline**
 
+```bash
+python -c "import httpx; r = httpx.post('http://127.0.0.1:8000/api/chat', json={'query': 'How is my portfolio doing?', 'user_id': 'usr_003', 'prior_user_turns': []}, timeout=10.0); print(r.text)"
+```
 ---
 
-## Submission
+### 🔮 Future Production Advancements
 
-- Push commits **throughout** your work — we read the git log
-- Your `README.md` must:
-  - Explain how to run your code
-  - List every required environment variable
-  - Document the non-obvious decisions you made
-  - Link your defence video (≤ 10 min — see `ASSIGNMENT.md`)
-- Deadline: **3 days** from the date you accepted this assignment
-- Defence video: due within **24 hours** of your final commit
-
----
-
-## Environment
-
-You self-host everything. We do not provide credentials. See `.env.example` for the variables you'll need.
+1. Migrate from static JSON profiles to a hosted relational database for dynamic user portfolio tracking.
+2. Transition keyword routing heuristics into live model reasoning utilizing structured JSON SDK parsing capabilities.
+3. Integrate live financial stock data providers to replace placeholder telemetry metrics with real-time calculations.
