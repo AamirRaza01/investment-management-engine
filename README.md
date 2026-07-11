@@ -11,61 +11,61 @@ This project implements a hybrid deterministic and probabilistic runtime archite
 Every client request passes through a stateful graph topology designed to ensure hard compliance isolation, maintain multi-turn context, and prevent data-blocking delays:
 
 ```text
-                                                    [ Incoming User Request ]
-                                           (JSON Payload: query, user_id, session_id)
-                                                               │
-                                                               ▼
-                                                 ┌───────────────────────────┐
-                                                 │    1. Local Safety Guard  │──[Blocked]──> [SSE: safety_block] ──> [Close Channel]
-                                                 │ (Deterministic Heuristics)│                    (Returns Compliance Message)
-                                                 └───────────────────────────┘
-                                                               │
-                                                           [Passed]
-                                                               ▼
-                                                 ┌───────────────────────────┐
-                                                 │ 2. LangGraph Router Node  │─────── [SSE: classification] 
-                                                 └───────────────────────────┘   (Emits extracted Intent & Tickers)
-                                                   /           │           \
-                                      [portfolio_health]  [market_news]   [tax_strategy]
-                                          /                    │                    \
-                                         ▼                     ▼                     ▼
-                                  ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
-                                  │ Health Agent │      │  News Agent  │      │  Tax Agent   │
-                                  └──────────────┘      └──────────────┘      └──────────────┘
-                                         │                     │                     │
-                                    [Triggers DB]       [Triggers API]         [Triggers Core]
-                                         │                     │                     │
-                                         ▼                     ▼                     ▼
-                                  ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
-                                  │SQLAlchemy ORM│      │yfinance API  │      │ Static Rule  │
-                                  │PostgreSQL engine    │Live metrics  │      │ Multi-period │
-                                  │Fetch assets  │      │Ticker news   │      │ Allocations  │
-                                  └──────────────┘      └──────────────┘      └──────────────┘
-                                         │                     │                     │
-                                         ▼                     ▼                     ▼
-                                  ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
-                                  │Compute Net   │      │Extract News  │      │ Evaluate     │
-                                  │Valuation &   │      │Sentiment &   │      │ Gains        │
-                                  │Concentration │      │Headlines     │      │ Harvesting   │
-                                  └──────────────┘      └──────────────┘      └──────────────┘
-                                         \                     │                     /
-                                    [Emit Agent Payload] [Emit Agent Payload] [Emit Agent Payload]
-                                          \                    │                    /
-                                           ▼                   ▼                   ▼
-                                        ┌─────────────────────────────────────────┐
-                                        │         3. Response Synthesizer Node    │
-                                        │        (Aggregates Multi-Agent Data)    │
-                                        └─────────────────────────────────────────┘
-                                                               │
-                                                               ▼
-                                                  [SSE: final_insight chunk]
-                                                 (Human-friendly markdown text)
-                                                               │
-                                                               ▼
-                                                 ┌───────────────────────────┐
-                                                 │ 4. Thread Memory Node     │──> [MemorySaver Cache Thread Persistence]
-                                                 │ (State Update Mechanics)  │──> [SSE: done] ──> [Close Channel Connection]
-                                                 └───────────────────────────┘
+                                            [ Incoming User Request ]
+                                   (JSON Payload: query, user_id, session_id)
+                                                       │
+                                                       ▼
+                                         ┌───────────────────────────┐
+                                         │    1. Local Safety Guard  │──[Blocked]──> [SSE: safety_block] ──> [Close Channel]
+                                         │ (Deterministic Heuristics)│                    (Returns Compliance Message)
+                                         └───────────────────────────┘
+                                                       │
+                                                   [Passed]
+                                                       ▼
+                                         ┌───────────────────────────┐
+                                         │ 2. LangGraph Router Node  │─────── [SSE: classification] 
+                                         └───────────────────────────┘   (Emits extracted Intent & Tickers)
+                                           /           │           \
+                              [portfolio_health]  [market_news]   [tax_strategy]
+                                  /                    │                    \
+                                 ▼                     ▼                     ▼
+                          ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+                          │ Health Agent │      │  News Agent  │      │  Tax Agent   │
+                          └──────────────┘      └──────────────┘      └──────────────┘
+                                 │                     │                     │
+                            [Triggers DB]       [Triggers API]         [Triggers Core]
+                                 │                     │                     │
+                                 ▼                     ▼                     ▼
+                          ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+                          │SQLAlchemy ORM│      │yfinance API  │      │ Static Rule  │
+                          │PostgreSQL engine    │Live metrics  │      │ Multi-period │
+                          │Fetch assets  │      │Ticker news   │      │ Allocations  │
+                          └──────────────┘      └──────────────┘      └──────────────┘
+                                 │                     │                     │
+                                 ▼                     ▼                     ▼
+                          ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+                          │Compute Net   │      │Extract News  │      │ Evaluate     │
+                          │Valuation &   │      │Sentiment &   │      │ Gains        │
+                          │Concentration │      │Headlines     │      │ Harvesting   │
+                          └──────────────┘      └──────────────┘      └──────────────┘
+                                 \                     │                     /
+                            [Emit Agent Payload] [Emit Agent Payload] [Emit Agent Payload]
+                                  \                    │                    /
+                                   ▼                   ▼                   ▼
+                                ┌─────────────────────────────────────────┐
+                                │         3. Response Synthesizer Node    │
+                                │        (Aggregates Multi-Agent Data)    │
+                                └─────────────────────────────────────────┘
+                                                       │
+                                                       ▼
+                                          [SSE: final_insight chunk]
+                                         (Human-friendly markdown text)
+                                                       │
+                                                       ▼
+                                         ┌───────────────────────────┐
+                                         │ 4. Thread Memory Node     │──> [MemorySaver Cache Thread Persistence]
+                                         │ (State Update Mechanics)  │──> [SSE: done] ──> [Close Channel Connection]
+                                         └───────────────────────────┘
 
 ```
 
