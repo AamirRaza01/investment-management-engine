@@ -1,8 +1,3 @@
-# =============================================================================
-# Valura AI — Team Lead Assignment — Core Dependencies
-# =============================================================================
-# This is the minimal set we ship. Add what you need; justify additions in your README.
-
 # --- Web framework + streaming ---
 fastapi>=0.111.0
 uvicorn[standard]>=0.29.0
@@ -23,11 +18,12 @@ pytest>=8.2.0
 pytest-asyncio>=0.23.0
 pytest-mock>=3.14.0
 
-# =============================================================================
-# Suggested additions (add only what you actually use):
-#   - yfinance              — easy market data (stretch alternative: an MCP server)
-#   - pandas / numpy        — if your portfolio math gets non-trivial
-#   - asyncpg / aiosqlite   — only if you persist sessions in a real DB
-#   - tenacity              — if you implement retry policies
-#   - cachetools            — if you implement the optional dedupe cache
-# =============================================================================
+# --- LangGraph & LangChain (Agentic Core) ---
+langgraph>=0.0.10
+langchain-core>=0.2.0
+langchain-groq>=0.1.0
+
+# --- Live Telemetry Data ---
+yfinance>=0.2.40
+
+

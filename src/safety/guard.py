@@ -1,5 +1,3 @@
-# src/safety/guard.py
-
 class SafetyVerdict:
     def __init__(self, blocked: bool, category: str = None, message: str = None):
         self.blocked = blocked
