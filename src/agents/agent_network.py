@@ -1,13 +1,11 @@
 import yfinance as yf
 from typing import Dict, Any
-from src.utils.user_loader import load_user_portfolio
+from src.utils.db_connector import db_engine   
 from src.agentic_engine import AgentState
 
-# Helper function to pull true market price strings dynamically
 def fetch_live_price(ticker: str, fallback_price: float) -> float:
     try:
         stock = yf.Ticker(ticker)
-        # Fetching current market price string from historical data loop
         todays_data = stock.history(period='1d')
         if not todays_data.empty:
             return float(todays_data['Close'].iloc[-1])
@@ -15,13 +13,10 @@ def fetch_live_price(ticker: str, fallback_price: float) -> float:
         pass
     return fallback_price
 
-# 1. Active Node: Portfolio Analytics Agent
-# Inside src/agents/agent_network.py
-
 def portfolio_health_node(state: AgentState) -> Dict[str, Any]:
-    raw_profile = load_user_portfolio(state["user_id"])
+    raw_profile = db_engine.fetch_user_assets(state["user_id"])
     if not raw_profile or "positions" not in raw_profile:
-        return {"agent_outputs": {"status": "error", "message": "Portfolio profile not found."}}
+        return {"agent_outputs": {"status": "error", "message": "Portfolio profile records empty."}}
         
     positions = raw_profile["positions"]
     total_market_value = 0.0
@@ -29,12 +24,9 @@ def portfolio_health_node(state: AgentState) -> Dict[str, Any]:
     
     for pos in positions:
         ticker = pos.get("ticker", "UNKNOWN")
+        shares = float(pos.get("shares") or pos.get("quantity") or 0)
+        cost_basis = float(pos.get("cost_basis") or pos.get("buy_price") or 1.0)
         
-        # FAIL-SAFE KEY LOOKUP: Dynamic key resolution handles matching variations
-        shares = float(pos.get("shares") or pos.get("quantity") or pos.get("shares_owned") or 0)
-        cost_basis = float(pos.get("cost_basis") or pos.get("buy_price") or pos.get("avg_cost") or 1.0)
-        
-        # Skip evaluating broken tracking assets
         if shares <= 0:
             continue
             
@@ -55,10 +47,10 @@ def portfolio_health_node(state: AgentState) -> Dict[str, Any]:
         pct = (ep["market_value"] / total_market_value) * 100 if total_market_value > 0 else 0
         if pct > 50.0:
             flag = "high"
-            observations.append(f"High risk exposure detected: {ep['ticker']} represents {pct:.1f}% of assets.")
+            observations.append(f"High risk exposure warning: {ep['ticker']} represents {pct:.1f}% of assets.")
             
     if not observations:
-        observations.append("Asset weights appear inside healthy balanced limits.")
+        observations.append("Asset weights appear inside healthy balanced parameters limits.")
 
     return {
         "agent_outputs": {
@@ -70,7 +62,6 @@ def portfolio_health_node(state: AgentState) -> Dict[str, Any]:
         }
     }
 
-# 2. Specialist Node: Market News Sentiment Agent
 def market_news_node(state: AgentState) -> Dict[str, Any]:
     tickers = state.get("extracted_tickers", [])
     target_ticker = tickers[0] if tickers else "SPY"
@@ -78,7 +69,6 @@ def market_news_node(state: AgentState) -> Dict[str, Any]:
     news_headlines = []
     try:
         stock = yf.Ticker(target_ticker)
-        # Fetch actual fresh news items from ticker feed streaming data
         ticker_news = stock.news
         if ticker_news:
             news_headlines = [item['title'] for item in ticker_news[:3]]
@@ -94,7 +84,6 @@ def market_news_node(state: AgentState) -> Dict[str, Any]:
         }
     }
 
-# 3. Specialist Node: Tax Strategy Agent (Scale Stub)
 def tax_strategy_node(state: AgentState) -> Dict[str, Any]:
     return {
         "agent_outputs": {
