@@ -6,7 +6,6 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
-# Pipeline imports
 from src.safety.guard import check as check_safety
 from src.classifier.classifier import classify
 from src.agents.portfolio_health import run as run_portfolio_health
