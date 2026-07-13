@@ -1,4 +1,4 @@
-# Valura Spine: Multi-Agent Investment Management Engine
+# Finlatics: Multi-Agent Investment Management Engine
 
 An asynchronous wealth management microservice built with **FastAPI**, **LangGraph**, and **Python 3.11+**. The system orchestrates an ecosystem of autonomous specialized agents to deliver live portfolio analytics, market news sentiment, and tax strategies over a real-time streaming channel.
 
